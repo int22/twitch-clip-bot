@@ -23,8 +23,12 @@ const client = new Client({
 
 client.once('ready', () => {
     console.log('ready');
-    let task = clipTask(TWITCH_CHANNEL, 1);
-    task.start();
+    try {
+        let task = clipTask(client, TWITCH_CHANNEL, 1);
+        task.start();
+    } catch(e) {
+        console.log(e);
+    }
 });
 
 client.on('interactionCreate', async interaction => {

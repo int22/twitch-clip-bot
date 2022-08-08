@@ -15,6 +15,7 @@ const opts = {
 
 async function apiRequest(resource, params) {
     try {
+        console.log('apiRequest', resource, params);
         const response = await get(`https://api.twitch.tv/helix/${resource}?${params}`, opts);
         const { data } = await response;
         return data;
@@ -37,6 +38,7 @@ async function gqlRequest(body) {
 
 async function getUserID(username) {
     try {
+        console.log('getUserID');
         const response = await apiRequest('users', `login=${username}`);
         const { data } = await response;
         const { id } = await data[0];
@@ -47,6 +49,7 @@ async function getUserID(username) {
 }
 
 async function getStream(username) {
+    console.log('getStream');
     let response = await apiRequest('streams', { user_login: username });
     let { data: stream } = await response;
     
@@ -59,10 +62,6 @@ async function getStream(username) {
         type,
         started_at
     } = stream[0];
-
-    if (type !== 'live') return {
-        error: 'stream not live'
-    };
 
     return {
         error: false,
@@ -153,12 +152,6 @@ async function getClipRange(username, start, end) {
     let clipList = [];
     const broadcaster_id = await getUserID(username);
 
-    if (!(start instanceof Date)) throw new Error('invalid start');
-    if (!(end instanceof Date)) throw new Error('invalid end');
-
-    start = start.toISOString();
-    end = end.toISOString();
-
     let response = await apiRequest('clips', `broadcaster_id=${broadcaster_id}&first=100&started_at=${start}&ended_at=${end}`);
     let { data: clips } = await response;
 
@@ -192,7 +185,9 @@ async function getClipRange(username, start, end) {
         return (a.created_at < b.created_at) ? -1 : ((a.created_at > b.created_at) ? 1 : 0);
     });
 
-    console.log(clipList[0], clipList[clipList.length-1]);
+    //console.log(clipList[0], clipList[clipList.length-1]);
+
+    return clipList;
 }
 
 module.exports = { getClip, resolveClip, getClipRange, getStream };

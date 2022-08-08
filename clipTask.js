@@ -1,46 +1,19 @@
 const { get, post } = require('axios');
 const cron = require('node-cron');
-const { getClipRange } = require('./twitch');
+const { getClipRange, getStream } = require('./twitch');
+const { buildEmbed } = require('./embed');
 
-const {
-    //AUTH_TOKEN,
-    //CLIENT_ID,
-    WEBHOOK_URL,
-    EMBED_COLOR
-} = process.env;
+const { DISCORD_CHANNEL_ID } = process.env;
 
-function sendClipToDiscord({
-    title,
-    creator_name,
-    created_at,
-    url,
-    thumbnail_url,
-    direct_url,
-}) {
+async function sendClipToDiscord(client, data) {
     console.log('sending to discord!');
 
-    const embed = {
-        embeds: [{
-            title,
-            color: EMBED_COLOR,
-            url: url,
-            image: {
-                url: thumbnail_url
-            },
-            timestamp: created_at,
-            footer: {
-                text: `Clipped by ${creator_name}`
-            }
-        }, {
-            title: "Download clip",
-            color: 0,
-            url: direct_url
-        }]
-    };
+    var { embed, actions } = buildEmbed(data);
+    console.log(embed, actions);
 
-    post(WEBHOOK_URL, embed).catch(e => {
-        console.error('failed to post clip', e);
-        return e;
+    client.channels.get(DISCORD_CHANNEL_ID).send({
+        embeds: [embed],
+        components: [actions]
     });
 
     return true;
@@ -53,20 +26,17 @@ function sortClipByTimestamp(a, b) {
     return isOlder ? -1 : (isNewer ? 1 : 0);
 }
 
+var previousTimestamp = undefined;
 async function processClips(username) {
     console.log('processing clips');
-    /*
-    let stream = await getStream(username);
-    if (stream.error) {
-        console.log('failed processing');
-        return {
-            error: 'stream not live'
-        };
-    }
-    */
 
-    let clips = await getClipRange(username, previousTimestamp, new Date().toISOString());
-    console.log(clips.length);
+    let stream = await getStream(username);
+    console.log(stream);
+
+    let start = previousTimestamp ?? stream.started_at;
+
+    let clips = await getClipRange(username, start, new Date().toISOString());
+    console.log(clips);
 
     let sameClip = clips.length == 1 && clips[0].created_at == previousTimestamp;
     let noClipFound = clips.length == 0;
@@ -83,7 +53,7 @@ async function processClips(username) {
     return clips;
 }
 
-function createClipTask(channel, minutes) {
+function createClipTask(client, channel, minutes) {
     console.log('createClipTask');
     if (!channel) throw new Error('createClipTask: Channel required');
 
@@ -103,7 +73,7 @@ function createClipTask(channel, minutes) {
         }
     
         for (let clip of clips) {
-            await sendClipToDiscord(clip);
+            await sendClipToDiscord(client, clip);
         }
     }, { scheduled: false });
 }

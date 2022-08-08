@@ -6,7 +6,7 @@ const {
 
 const { EMBED_COLOR } = process.env;
 
-function buildEmbed(data) {
+function buildClipEmbed(data) {
     const {
         title,
         url,
@@ -39,4 +39,32 @@ function buildEmbed(data) {
     };
 }
 
-module.exports = { buildEmbed };
+function buildDownloadEmbed(data, clipUrl, user) {
+    let {
+        url,
+        thumbnail
+    } = data;
+
+    const embed = new MessageEmbed()
+        .setColor(`#${EMBED_COLOR}`)
+        .setURL(clipUrl)
+        .setImage(thumbnail)
+        .setTimestamp(new Date().toISOString())
+        .setFooter(`Requested by ${user.username}#${user.discriminator}`);
+
+    const actions = new MessageActionRow()
+        .addComponents(
+            new MessageButton()
+                .setURL(url)
+                .setLabel('Download clip')
+                .setStyle('LINK')
+        );
+
+    return {
+        content: `Download link for ${clipUrl}`,
+        embed,
+        actions
+    };
+}
+
+module.exports = { buildClipEmbed, buildDownloadEmbed };

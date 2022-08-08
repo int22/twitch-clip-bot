@@ -9,13 +9,16 @@ const {
     MessageActionRow,
     MessageButton
 } = require('discord.js');
-const { buildEmbed } = require('./embed');
+
+const {
+    buildClipEmbed,
+    buildDownloadEmbed
+} = require('./embed');
 
 const {
     DISCORD_TOKEN,
     DISCORD_CHANNEL_ID,
-    TWITCH_CHANNEL,
-    EMBED_COLOR
+    TWITCH_CHANNEL
 } = process.env;
 
 const client = new Client({
@@ -47,34 +50,10 @@ client.on('interactionCreate', async interaction => {
 
         if (!clip) return interaction.editReply('No results found');
 
-        const {
-            title,
-            url,
-            thumbnail_url,
-            direct_url,
-            created_at,
-            creator_name
-        } = clip[rnd];
-
-        const clipEmbed = new MessageEmbed()
-            .setColor(`#${EMBED_COLOR}`)
-            .setTitle(title)
-            .setURL(url)
-            .setImage(thumbnail_url)
-            .setTimestamp(created_at)
-            .setFooter(`Clipped by ${creator_name}`);
-        
-        const actions = new MessageActionRow()
-            .addComponents(
-                new MessageButton()
-                    .setURL(direct_url)
-                    .setLabel('Download clip')
-                    .setStyle('LINK')
-                    //.setEmoji('👍')
-            );
+        var { embed, actions } = buildClipEmbed(clip[rnd]);
 
         interaction.editReply({
-            embeds: [clipEmbed],
+            embeds: [embed],
             components: [actions]
         });
     } else if (commandName == 'download') {
@@ -84,26 +63,11 @@ client.on('interactionCreate', async interaction => {
         let { clip } = await resolveClip(clipUrl);
         if (!clip) return interaction.editReply('clip not found');
         
-        let { url, thumbnail } = clip;
-
-        const clipEmbed = new MessageEmbed()
-            .setColor(`#${EMBED_COLOR}`)
-            .setURL(clipUrl)
-            .setImage(thumbnail)
-            .setTimestamp(new Date().toISOString())
-            .setFooter(`Requested by ${interaction.user.username}#${interaction.user.discriminator}`);
-        
-        const actions = new MessageActionRow()
-            .addComponents(
-                new MessageButton()
-                    .setURL(url)
-                    .setLabel('Download clip')
-                    .setStyle('LINK')
-            );
+        let { content, embed, actions } = buildDownloadEmbed(clip, clipUrl, interaction.user);
 
         interaction.editReply({
-            content: `Download link for ${clipUrl}`,
-            embeds: [clipEmbed],
+            content,
+            embeds: [embed],
             components: [actions]
         });
     }

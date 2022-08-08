@@ -1,14 +1,14 @@
 const { get, post } = require('axios');
 const cron = require('node-cron');
 const { getClipRange, getStream } = require('./twitch');
-const { buildEmbed } = require('./embed');
+const { buildClipEmbed } = require('./embed');
 
 const { DISCORD_CHANNEL_ID } = process.env;
 
 async function sendClipToDiscord(client, data) {
     console.log('sending to discord!');
 
-    var { embed, actions } = buildEmbed(data);
+    var { embed, actions } = buildClipEmbed(data);
     console.log(embed, actions);
 
     let channel = client.channels.cache.find(channel => channel.id === DISCORD_CHANNEL_ID);

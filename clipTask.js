@@ -1,6 +1,6 @@
 const { get, post } = require('axios');
 const cron = require('node-cron');
-const twitch = require('./twitch');
+const { getClipRange } = require('./twitch');
 
 const {
     //AUTH_TOKEN,
@@ -47,6 +47,7 @@ function sendClipToDiscord({
 }
 
 function sortClipByTimestamp(a, b) {
+    console.log('sorting');
     let isOlder = (a.created_at < b.created_at);
     let isNewer = (a.created_at > b.created_at);
     return isOlder ? -1 : (isNewer ? 1 : 0);
@@ -54,6 +55,7 @@ function sortClipByTimestamp(a, b) {
 
 async function processClips(username) {
     console.log('processing clips');
+    /*
     let stream = await getStream(username);
     if (stream.error) {
         console.log('failed processing');
@@ -61,8 +63,10 @@ async function processClips(username) {
             error: 'stream not live'
         };
     }
+    */
 
-    let clips = await getClips(username, previousTimestamp);
+    let clips = await getClipRange(username, previousTimestamp, new Date().toISOString());
+    console.log(clips.length);
 
     let sameClip = clips.length == 1 && clips[0].created_at == previousTimestamp;
     let noClipFound = clips.length == 0;
@@ -92,6 +96,7 @@ function createClipTask(channel, minutes) {
     return cron.schedule(cronInterval, async () => {
         console.log('task ran');
         let clips = await processClips(channel);
+        console.log(clips.length);
         if (clips.length == 0) {
             console.log('no clips found!');
             return;

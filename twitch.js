@@ -38,7 +38,6 @@ async function gqlRequest(body) {
 
 async function getUserID(username) {
     try {
-        console.log('getUserID');
         const response = await apiRequest('users', `login=${username}`);
         const { data } = await response;
         const { id } = await data[0];
@@ -49,7 +48,6 @@ async function getUserID(username) {
 }
 
 async function getStream(username) {
-    console.log('getStream');
     let response = await apiRequest('streams', { user_login: username });
     let { data: stream } = await response;
     
@@ -154,8 +152,6 @@ async function getClipRange(username, start, end) {
 
     let response = await apiRequest('clips', `broadcaster_id=${broadcaster_id}&first=100&started_at=${start}&ended_at=${end}`);
     let { data: clips } = await response;
-
-    console.log(clips.length);
 
     for (let clip of clips) {
         let {

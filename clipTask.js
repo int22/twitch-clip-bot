@@ -1,4 +1,3 @@
-const { get, post } = require('axios');
 const cron = require('node-cron');
 const { getClipRange, getStream } = require('./twitch');
 const { buildClipEmbed } = require('./embed');
@@ -6,10 +5,7 @@ const { buildClipEmbed } = require('./embed');
 const { DISCORD_CHANNEL_ID } = process.env;
 
 async function sendClipToDiscord(client, data) {
-    console.log('sending to discord!');
-
     var { embed, actions } = buildClipEmbed(data);
-    console.log(embed, actions);
 
     let channel = client.channels.cache.find(channel => channel.id === DISCORD_CHANNEL_ID);
     channel.send({
@@ -21,23 +17,22 @@ async function sendClipToDiscord(client, data) {
 }
 
 function sortClipByTimestamp(a, b) {
-    console.log('sorting');
     let isOlder = (a.created_at < b.created_at);
     let isNewer = (a.created_at > b.created_at);
     return isOlder ? -1 : (isNewer ? 1 : 0);
 }
 
 var previousTimestamp = undefined;
+var firstRun = true;
+
 async function processClips(username) {
-    console.log('processing clips');
-
     let stream = await getStream(username);
-    console.log(stream);
 
-    let start = previousTimestamp ?? stream.started_at;
+    let start = (firstRun)
+        ? (stream?.started_at ?? new Date().toISOString())
+        : previousTimestamp;
 
     let clips = await getClipRange(username, start, new Date().toISOString());
-    console.log(clips);
 
     let sameClip = clips.length == 1 && clips[0].created_at == previousTimestamp;
     let noClipFound = clips.length == 0;
@@ -49,7 +44,8 @@ async function processClips(username) {
     
     clips = clips.sort(sortClipByTimestamp);
 
-    previousTimestamp = clips[clips.length-1].created_at;
+    previousTimestamp = new Date().toISOString();
+    firstRun = false;
 
     return clips;
 }
@@ -67,7 +63,6 @@ function createClipTask(client, channel, minutes) {
     return cron.schedule(cronInterval, async () => {
         console.log('task ran');
         let clips = await processClips(channel);
-        console.log(clips.length);
         if (clips.length == 0) {
             console.log('no clips found!');
             return;

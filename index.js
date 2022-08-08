@@ -4,10 +4,7 @@ const { getClip, resolveClip } = require('./twitch');
 const clipTask = require('./clipTask');
 const {
     Client,
-    Intents,
-    MessageEmbed,
-    MessageActionRow,
-    MessageButton
+    Intents
 } = require('discord.js');
 
 const {

@@ -9,6 +9,7 @@ const {
     MessageActionRow,
     MessageButton
 } = require('discord.js');
+const { buildEmbed } = require('./embed');
 
 const {
     DISCORD_TOKEN,

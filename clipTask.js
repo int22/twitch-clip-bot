@@ -11,7 +11,8 @@ async function sendClipToDiscord(client, data) {
     var { embed, actions } = buildEmbed(data);
     console.log(embed, actions);
 
-    client.channels.get(DISCORD_CHANNEL_ID).send({
+    let channel = client.channels.cache.find(channel => channel.id === DISCORD_CHANNEL_ID);
+    channel.send({
         embeds: [embed],
         components: [actions]
     });

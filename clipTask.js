@@ -53,6 +53,10 @@ async function processClips(user_id, channel) {
     return clips;
 }
 
+function sleep(ms) {
+    return new Promise(resolve => setTimeout(resolve, ms))
+}
+
 function createClipTask(client, channel, minutes) {
     console.log('createClipTask');
     if (!channel) throw new Error('createClipTask: Channel required');
@@ -79,6 +83,7 @@ function createClipTask(client, channel, minutes) {
     
         for (let clip of clips) {
             await sendClipToDiscord(client, clip);
+            await sleep(2500);
         }
     }, { scheduled: false });
 }

@@ -15,7 +15,7 @@ const opts = {
 
 async function apiRequest(resource, params) {
     try {
-        console.log('apiRequest', resource, params);
+        //console.log('apiRequest', resource, params);
         const response = await get(`https://api.twitch.tv/helix/${resource}?${params}`, opts);
         const { data } = await response;
         return data;
@@ -48,9 +48,9 @@ async function getUserID(username) {
 }
 
 async function getStream(username) {
-    let response = await apiRequest('streams', { user_login: username });
+    let response = await apiRequest('streams', `user_id=${username}`);
     let { data: stream } = await response;
-    
+
     if (stream.length == 0) return {
         error: 'no stream found'
     };
@@ -58,14 +58,16 @@ async function getStream(username) {
     let {
         id,
         type,
-        started_at
+        started_at,
+        user_login
     } = stream[0];
 
     return {
         error: false,
         id,
         type,
-        started_at
+        started_at,
+        user_login
     };
 }
 
@@ -186,4 +188,4 @@ async function getClipRange(username, start, end) {
     return clipList;
 }
 
-module.exports = { getClip, resolveClip, getClipRange, getStream };
+module.exports = { getClip, resolveClip, getClipRange, getStream, getUserID };

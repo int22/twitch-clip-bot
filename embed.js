@@ -22,7 +22,9 @@ function buildClipEmbed(data) {
         .setURL(url)
         .setImage(thumbnail_url)
         .setTimestamp(created_at)
-        .setFooter(`Clipped by ${creator_name}`);
+        .setFooter({
+            text: `Clipped by ${creator_name}`
+        });
 
     const actions = new MessageActionRow()
         .addComponents(
@@ -50,7 +52,9 @@ function buildDownloadEmbed(data, clipUrl, user) {
         .setURL(clipUrl)
         .setImage(thumbnail)
         .setTimestamp(new Date().toISOString())
-        .setFooter(`Requested by ${user.username}#${user.discriminator}`);
+        .setFooter({
+            text: `Requested by ${user.username}#${user.discriminator}`
+        });
 
     const actions = new MessageActionRow()
         .addComponents(

@@ -36,15 +36,6 @@ async function processClips(user_id, channel) {
     }
 
     let clips = await getClipRange(channel, start, new Date().toISOString());
-
-    let sameClip = clips.length == 1 && clips[0].created_at == previousTimestamp;
-    let noClipFound = clips.length == 0;
-
-    if (sameClip || noClipFound) {
-        previousTimestamp = new Date().toISOString();
-        return [];
-    }
-    
     clips = clips.sort(sortClipByTimestamp);
 
     previousTimestamp = new Date().toISOString();

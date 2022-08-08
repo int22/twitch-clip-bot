@@ -46,6 +46,12 @@ function sendClipToDiscord({
     return true;
 }
 
+function sortClipByTimestamp(a, b) {
+    let isOlder = (a.created_at < b.created_at);
+    let isNewer = (a.created_at > b.created_at);
+    return isOlder ? -1 : (isNewer ? 1 : 0);
+}
+
 async function processClips(username) {
     console.log('processing clips');
     let stream = await getStream(username);

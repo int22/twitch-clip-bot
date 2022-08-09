@@ -1,5 +1,5 @@
 const cron = require('node-cron');
-const { getClipRange, getStream, getUserID } = require('./twitch');
+const { getClipsRange, getStream, getUserID } = require('./twitch');
 const { buildClipEmbed } = require('./embed');
 
 const { DISCORD_CHANNEL_ID } = process.env;
@@ -27,18 +27,25 @@ var firstRun = true;
 
 async function processClips(user_id, channel) {
     let stream = await getStream(user_id);
+    let now = new Date().toISOString();
 
     var start;
     if (firstRun) {
-        start = (!stream.error) ? stream.started_at : new Date().toISOString();
+        start = (!stream.error) ? stream.started_at : now;
     } else {
-        start = previousTimestamp ?? new Date().toISOString();
+        start = previousTimestamp ?? now;
     }
 
-    let clips = await getClipRange(channel, start, new Date().toISOString());
+    let clips = await getClipsRange(channel, start, now);
+
+    if (clips.length == 0) {
+        previousTimestamp = now;
+        return [];
+    }
+
     clips = clips.sort(sortClipByTimestamp);
 
-    previousTimestamp = new Date().toISOString();
+    previousTimestamp = now;
     firstRun = false;
 
     return clips;

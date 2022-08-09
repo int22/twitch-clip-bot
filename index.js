@@ -1,6 +1,6 @@
 require('dotenv').config();
 
-const { getClip, resolveClip } = require('./twitch');
+const { getClips, resolveClip } = require('./twitch');
 const clipTask = require('./clipTask');
 const {
     Client,
@@ -40,14 +40,14 @@ client.on('interactionCreate', async interaction => {
     await interaction.deferReply();
 
     if (commandName == 'clip') {
-        const clip = await getClip(TWITCH_CHANNEL);
+        const clips = await getClips(TWITCH_CHANNEL);
 
-        const clipCount = clip.length;
-        const rnd = Math.floor(Math.random() * clipCount);
+        const clipCount = clips.length;
+        const rnd = Math.trunc(Math.random() * Math.pow(10, Math.ceil(Math.log10(clipCount))) % clipCount);
 
-        if (!clip) return interaction.editReply('No results found');
+        if (!clips) return interaction.editReply('No results found');
 
-        var { embed, actions } = buildClipEmbed(clip[rnd]);
+        var { embed, actions } = buildClipEmbed(clips[rnd]);
 
         interaction.editReply({
             embeds: [embed],

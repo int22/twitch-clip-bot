@@ -72,7 +72,7 @@ async function getStream(username) {
 }
 
 //const clipLengthLimit = 25000;
-async function getClip(username) {
+async function getClips(username) {
     let clipList = [];
     const broadcaster_id = await getUserID(username);
 
@@ -148,7 +148,7 @@ async function resolveClip(url) {
     };
 }
 
-async function getClipRange(username, start, end) {
+async function getClipsRange(username, start, end) {
     let clipList = [];
     const broadcaster_id = await getUserID(username);
 
@@ -176,16 +176,11 @@ async function getClipRange(username, start, end) {
         });
     }
 
-    //clips = clipList.sort(() => Math.random() - .5);
-    //let index = Math.trunc(Math.random() * (clips.length-1));
-
     clipList = clipList.sort(function(a, b) {
         return (a.created_at < b.created_at) ? -1 : ((a.created_at > b.created_at) ? 1 : 0);
     });
 
-    //console.log(clipList[0], clipList[clipList.length-1]);
-
     return clipList;
 }
 
-module.exports = { getClip, resolveClip, getClipRange, getStream, getUserID };
+module.exports = { getClips, resolveClip, getClipsRange, getStream, getUserID };

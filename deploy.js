@@ -1,7 +1,7 @@
 require('dotenv').config();
 const {
     DISCORD_TOKEN,
-    DISCORD_CLIENT_ID,
+    DISCORD_APPLICATION_ID,
     DISCORD_GUILD_ID
 } = process.env;
 
@@ -27,6 +27,6 @@ const commands = [
 const rest = new REST({ version: '9' })
     .setToken(DISCORD_TOKEN);
 
-rest.put(Routes.applicationGuildCommands(DISCORD_CLIENT_ID, DISCORD_GUILD_ID), { body: commands })
+rest.put(Routes.applicationGuildCommands(DISCORD_APPLICATION_ID, DISCORD_GUILD_ID), { body: commands })
     .then(() => console.log('successfully registered commands'))
     .catch(console.error);

@@ -12,11 +12,20 @@ const {
     buildDownloadEmbed
 } = require('./embed');
 
+const { webcrypto } = require('node:crypto');
+
 const {
     DISCORD_TOKEN,
     DISCORD_CHANNEL_ID,
     TWITCH_CHANNEL
 } = process.env;
+
+function getRandomValue(limit) {
+    let buf = new Uint8Array(1);
+    webcrypto.getRandomValues(buf);
+    let res = buf[0] % (limit-1);
+    return res;
+}
 
 const client = new Client({
     intents: [Intents.FLAGS.GUILDS]
@@ -43,7 +52,7 @@ client.on('interactionCreate', async interaction => {
         const clips = await getClips(TWITCH_CHANNEL);
 
         const clipCount = clips.length;
-        const rnd = Math.trunc(Math.random() * Math.pow(10, Math.ceil(Math.log10(clipCount))) % clipCount);
+        const rnd = getRandomValue(clipCount);
 
         if (!clips) return interaction.editReply('No results found');
 

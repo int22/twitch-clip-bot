@@ -1,5 +1,5 @@
 const cron = require('node-cron');
-const { getClipsRange, getStream, getUserID } = require('./twitch');
+const { getClipsRange, getUserID } = require('./twitch');
 const { buildClipEmbed } = require('./embed');
 
 const { DISCORD_CHANNEL_ID } = process.env;
@@ -22,19 +22,15 @@ function sortClipByTimestamp(a, b) {
     return isOlder ? -1 : (isNewer ? 1 : 0);
 }
 
-var previousTimestamp = undefined;
-var firstRun = true;
-
 async function processClips(user_id, channel) {
-    let stream = await getStream(user_id);
     let now = new Date().toISOString();
 
-    var start;
-    if (firstRun) {
-        start = (!stream.error) ? stream.started_at : now;
-    } else {
-        start = previousTimestamp ?? now;
+    if (global.previousTimestamp == now) {
+        global.previousTimestamp = now;
+        return [];
     }
+
+    let start = global.previousTimestamp;
 
     let clips = await getClipsRange(channel, start, now);
 
@@ -45,8 +41,7 @@ async function processClips(user_id, channel) {
 
     clips = clips.sort(sortClipByTimestamp);
 
-    previousTimestamp = now;
-    firstRun = false;
+    global.previousTimestamp = now;
 
     return clips;
 }
@@ -55,8 +50,7 @@ function sleep(ms) {
     return new Promise(resolve => setTimeout(resolve, ms))
 }
 
-function createClipTask(client, channel, minutes) {
-    console.log('createClipTask');
+async function createClipTask(client, channel, minutes=1) {
     if (!channel) throw new Error('createClipTask: Channel required');
 
     let cronInterval = `*/${minutes} * * * *`;
@@ -65,14 +59,11 @@ function createClipTask(client, channel, minutes) {
 
     console.log('creating task');
 
-    var user_id;
+    var user_id = await getUserID(channel);
+    global.previousTimestamp = new Date().toISOString();
 
     return cron.schedule(cronInterval, async () => {
-        if (!user_id) {
-            user_id = await getUserID(channel);
-        }
-
-        console.log('task ran');
+        console.log('clip task ran');
         let clips = await processClips(user_id, channel);
         if (clips.length == 0) {
             console.log('no clips found!');

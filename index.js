@@ -2,10 +2,7 @@ require('dotenv').config();
 
 const { getClips, resolveClip } = require('./twitch');
 const clipTask = require('./clipTask');
-const {
-    Client,
-    Intents
-} = require('discord.js');
+const { Client, Intents } = require('discord.js');
 
 const {
     buildClipEmbed,
@@ -23,18 +20,18 @@ const {
 function getRandomValue(limit) {
     let buf = new Uint8Array(1);
     webcrypto.getRandomValues(buf);
-    let res = buf[0] % (limit-1);
-    return res;
+    return buf[0] % (limit-1);
 }
 
 const client = new Client({
     intents: [Intents.FLAGS.GUILDS]
 });
 
-client.once('ready', () => {
-    console.log('ready');
+client.once('ready', async () => {
+    console.log(`Logged in as ${client.user.username}`);
+
     try {
-        let task = clipTask(client, TWITCH_CHANNEL, 1);
+        let task = await clipTask(client, TWITCH_CHANNEL);
         task.start();
     } catch(e) {
         console.log(e);
